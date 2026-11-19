@@ -4,7 +4,8 @@ One image that sums up the world news of **Thursday, 19 November 2026**, built
 for the make.fun [news-image-20261119](https://make.fun/c/news-image-20261119)
 bounty.
 
-The entry is a front-page poster (1024×1024 JPEG, stored as `entry.png`):
+The entry is a front-page poster (1024×1024 JPEG, stored in this repository
+as `entry poster.png` and written out by the program as `entry.png`):
 a masthead and the date, a lead story, six illustrated story cards and a
 ticker of the day's other headlines.
 
