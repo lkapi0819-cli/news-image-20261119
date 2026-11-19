@@ -12,14 +12,27 @@
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { copyFileSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 const source = new URL('./entry.png', import.meta.url);
 const target = join(outDir, 'entry.png');
 
-copyFileSync(source, target);
+const bytes = readFileSync(source);
 
-const { size } = statSync(target);
-console.log(`wrote ${target}: ${size} bytes`);
+// The gate reads the image by its first bytes, not its name: accept a whole
+// PNG or JPEG of at most 1 MiB, and refuse anything else rather than write a
+// file the scorer would mark invalid.
+const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+const isPng = PNG_MAGIC.every((b, i) => bytes[i] === b);
+const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[bytes.length - 2] === 0xff && bytes[bytes.length - 1] === 0xd9;
+if (!isPng && !isJpeg) {
+  throw new Error('entry.png is neither a PNG nor a JPEG image');
+}
+if (bytes.length > 1_048_576) {
+  throw new Error(`entry.png is ${bytes.length} bytes, over the 1 MiB limit`);
+}
+
+writeFileSync(target, bytes);
+console.log(`wrote ${target}: ${bytes.length} bytes (${isPng ? 'PNG' : 'JPEG'})`);
